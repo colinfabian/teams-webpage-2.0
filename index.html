@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFL Teams Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { text-align: center; }
+    select { width: 100%; padding: 10px; font-size: 1.1em; margin-bottom: 24px; }
+    .team-details { display: flex; align-items: center; gap: 32px; margin-top: 24px; }
+    .team-details img { width: 120px; height: 120px; object-fit: contain; background: #eee; border-radius: 8px; }
+    .team-info { flex: 1; }
+    .team-info h2 { margin: 0 0 8px 0; }
+    .team-info p { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NFL Teams</h1>
+    <select id="teamSelect">
+      <option value="">Select a team...</option>
+    </select>
+    <div id="teamDetails" class="team-details" style="display:none;"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    // Fetch and parse the CSV file
+    fetch('team_data.csv')
+      .then(response => response.text())
+      .then(csvText => {
+        const parsed = Papa.parse(csvText, { header: true });
+        const teams = parsed.data.filter(row => row.team_abbr);
+        const select = document.getElementById('teamSelect');
+        teams.forEach(team => {
+          const option = document.createElement('option');
+          option.value = team.team_abbr;
+          option.textContent = team.team_name;
+          select.appendChild(option);
+        });
+        select.addEventListener('change', function() {
+          const abbr = this.value;
+          const team = teams.find(t => t.team_abbr === abbr);
+          const detailsDiv = document.getElementById('teamDetails');
+          if (team) {
+            detailsDiv.innerHTML = `
+              <img src="${team.team_logo_espn}" alt="${team.team_name} logo">
+              <div class="team-info">
+                <h2>${team.team_name} (${team.team_abbr})</h2>
+                <p><strong>Division:</strong> ${team.team_division}</p>
+              </div>
+            `;
+            detailsDiv.style.display = 'flex';
+          } else {
+            detailsDiv.style.display = 'none';
+          }
+        });
+      });
+  </script>
+</body>
+</html>
